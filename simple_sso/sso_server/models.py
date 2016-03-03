@@ -3,12 +3,14 @@ import datetime
 
 from django.conf import settings
 from django.db import models
-from django.utils.deconstruct import deconstructible
+try:
+    from django.utils.deconstruct import deconstructible
+except ImportError:
+    deconstructible = None
 
 from ..utils import gen_secret_key
 
 
-@deconstructible
 class SecretKeyGenerator(object):
     """
     Helper to give default values to Client.secret and Client.key
@@ -22,6 +24,10 @@ class SecretKeyGenerator(object):
         while self.get_model().objects.filter(**{self.field: key}).exists():
             key = gen_secret_key(64)
         return key
+
+
+if deconstructible:
+    SecretKeyGenerator = deconstructible(SecretKeyGenerator)
 
 
 class ConsumerSecretKeyGenerator(SecretKeyGenerator):
